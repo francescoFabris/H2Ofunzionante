@@ -3,6 +3,7 @@ package it.unipd.dei.esp1617.h2o;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.Spinner;
 
 /**
@@ -11,8 +12,9 @@ import android.widget.Spinner;
 
 public class InputActivity extends AppCompatActivity
 {
-    private EditText spaceName, spaceWeight, spaceSport;
+    private EditText spaceName, spaceWeight, spaceSport, spaceSleep, spaceWake;
     private Spinner spinnerSex,spinnerAge;
+    private RadioButton lessButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -24,5 +26,8 @@ public class InputActivity extends AppCompatActivity
         spaceSport=(EditText) findViewById(R.id.sport_time);
         spinnerSex=(Spinner) findViewById(R.id.sex_spinner);
         spinnerAge=(Spinner) findViewById(R.id.age_spinner);
+        spaceSleep=(EditText) findViewById(R.id.sleep_time);
+        spaceWake=(EditText) findViewById(R.id.wake_time);
+        lessButton=(RadioButton) findViewById(R.id.less_notify);
     }
 }

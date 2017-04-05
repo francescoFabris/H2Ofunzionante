@@ -5,4 +5,5 @@
     <string name="age_insert">Your age: </string>
     <string name="sport_insert">When do you start playing sports?</string>
     <string name="weight_insert">What is your weight?</string>
+    <string name="time_insert">Wake-Sleep range</string>
 </resources>
