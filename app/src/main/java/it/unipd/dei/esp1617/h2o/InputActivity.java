@@ -15,6 +15,7 @@ public class InputActivity extends AppCompatActivity
     private EditText spaceName, spaceWeight, spaceSport, spaceSleep, spaceWake;
     private Spinner spinnerSex,spinnerAge;
     private RadioButton lessButton;
+    //cazzinegri
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
