@@ -12,6 +12,9 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Spinner;
+import android.widget.ImageSwitcher;
+
+
 
 /**
  * Created by boemd on 04/04/2017.
@@ -28,6 +31,8 @@ public class InputActivity extends AppCompatActivity
     private int age, weight;
 
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +45,7 @@ public class InputActivity extends AppCompatActivity
         spaceSleep=(EditText) findViewById(R.id.sleep_time);
         spaceWake=(EditText) findViewById(R.id.wake_time);
         lessButton=(RadioButton) findViewById(R.id.less_notify);
+
 
 
         ArrayAdapter<CharSequence> sex_adapter = ArrayAdapter.createFromResource(this, R.array.sex_array, android.R.layout.simple_spinner_item);
