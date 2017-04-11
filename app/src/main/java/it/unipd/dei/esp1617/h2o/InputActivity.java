@@ -9,6 +9,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Spinner;
@@ -39,7 +40,7 @@ public class InputActivity extends AppCompatActivity
         spinnerAge=(Spinner) findViewById(R.id.age_spinner);
         spaceSleep=(EditText) findViewById(R.id.sleep_time);
         spaceWake=(EditText) findViewById(R.id.wake_time);
-        lessButton=(RadioButton) findViewById(R.id.less_notify);
+        lessButton=(CheckBox) findViewById(R.id.less_not);
 
 
         ArrayAdapter<CharSequence> sex_adapter = ArrayAdapter.createFromResource(this, R.array.sex_array, android.R.layout.simple_spinner_item);
@@ -50,10 +51,11 @@ public class InputActivity extends AppCompatActivity
         sex_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerAge.setAdapter(years_adapter);
 
+        //selezione età da spinner
         spinnerAge.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                age = position;
+                age = (int)id;
             }
 
             @Override
@@ -61,11 +63,11 @@ public class InputActivity extends AppCompatActivity
                 age = 0;
             }
         });
-
+        //selezione sesso da spinner
         spinnerSex.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                male = (position==0)? false:true;
+                male = (id==0)? false:true;
             }
 
             @Override
@@ -74,22 +76,42 @@ public class InputActivity extends AppCompatActivity
             }
         });
 
+        //inserimento nome su EditText
         spaceName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                spaceName = null;
+                name = null;
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                spaceName = (EditText) s;
+                name = s.toString();
             }
 
             @Override
             public void afterTextChanged(Editable s) {
                 spaceName = (EditText) s;
+                name = s.toString();
             }
         });
+
+        spaceWeight.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                weight = Integer.parseInt(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                weight = Integer.parseInt(s.toString());
+            }
+        });
+
+
 
     }
 

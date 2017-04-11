@@ -12,7 +12,7 @@ public class MainActivity extends AppCompatActivity {
     private Button bu;
     private TextView tv1,tv2,tv3,tv4;
     private FloatingActionButton faplus, faminus;
-    private int drunkGlasses =0;
+    private static int drunkGlasses =0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,5 +58,12 @@ public class MainActivity extends AppCompatActivity {
                 drunkGlasses--;
             }
         });
+    }
+
+    public void incrementGlasses(){
+        drunkGlasses++;
+    }
+    public void decrementGlasses(){
+        drunkGlasses--;
     }
 }
