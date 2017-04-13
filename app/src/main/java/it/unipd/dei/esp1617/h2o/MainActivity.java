@@ -21,8 +21,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        int dg=preferences.getInt("drunk_glasses",0);
-        drunkGlasses=dg;
+        drunkGlasses=preferences.getInt("drunk_glasses",0);
 
         tv1 = (TextView) findViewById(R.id.textView1);
         tv2 = (TextView) findViewById(R.id.textView2);
@@ -31,9 +30,6 @@ public class MainActivity extends AppCompatActivity {
         changeViewsText();
 
         bu = (Button) findViewById(R.id.apri_second);
-        /**
-         * Passaggio all'activity per l'acquisizione delle informazioni sull'utente
-         */
         bu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
