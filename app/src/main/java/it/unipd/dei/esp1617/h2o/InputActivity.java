@@ -1,5 +1,6 @@
 package it.unipd.dei.esp1617.h2o;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -20,99 +21,91 @@ import android.widget.Spinner;
 
 public class InputActivity extends AppCompatActivity
 {
+    /*
     private EditText spaceName, spaceWeight, spaceSport, spaceSleep, spaceWake;
     private Spinner spinnerSex,spinnerAge;
-    private RadioButton lessButton;
-
-    private String name;
-    private boolean lessnotif, male; //male = true, female = false;
-    private int age, weight;
-
+    private CheckBox checkNot;
+    */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_input);
-        spaceName=(EditText) findViewById(R.id.name_space);
-        spaceWeight=(EditText) findViewById(R.id.weight);
-        spaceSport=(EditText) findViewById(R.id.sport_time);
-        spinnerSex=(Spinner) findViewById(R.id.sex_spinner);
-        spinnerAge=(Spinner) findViewById(R.id.age_spinner);
-        spaceSleep=(EditText) findViewById(R.id.sleep_time);
-        spaceWake=(EditText) findViewById(R.id.wake_time);
-        lessButton=(CheckBox) findViewById(R.id.less_not);
 
+        //dati persistenti salvati come SharedpPeferences
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        int age = preferences.getInt("age_value",0);
+        int weight = preferences.getInt("weight_value",50);
+        boolean lessnot = preferences.getBoolean("lessnot_value",false);
+        boolean male = preferences.getBoolean("male_value",false);  //male = true, female = false;
+        String name = preferences.getString("name_value", "Al Bano Carrisi");
+        //mancano gli orari!!
 
+        EditText spaceName=(EditText) findViewById(R.id.name_space);
+        EditText spaceWeight=(EditText) findViewById(R.id.weight);
+        EditText spaceSport=(EditText) findViewById(R.id.sport_time);
+        Spinner spinnerSex=(Spinner) findViewById(R.id.sex_spinner);
+        Spinner spinnerAge=(Spinner) findViewById(R.id.age_spinner);
+        EditText spaceSleep=(EditText) findViewById(R.id.sleep_time);
+        EditText spaceWake=(EditText) findViewById(R.id.wake_time);
+        CheckBox checkNot = (CheckBox) findViewById(R.id.less_notifications);
+
+        //EditText
+        spaceName.setText(name);
+        spaceWeight.setText(weight);
+        //spaceSport.setText();
+        //spaceSleep.setText();
+        //spaceSleep.setText();
+
+        //CheckBox
+        checkNot.setChecked(lessnot);
+
+        //Spinner
         ArrayAdapter<CharSequence> sex_adapter = ArrayAdapter.createFromResource(this, R.array.sex_array, android.R.layout.simple_spinner_item);
         sex_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerSex.setAdapter(sex_adapter);
+        //inutile per il momento
+        if(spinnerSex.getSelectedItemPosition()==1)
+            male=true;
+
 
         ArrayAdapter<CharSequence> years_adapter = ArrayAdapter.createFromResource(this, R.array.years_array, android.R.layout.simple_spinner_item);
         sex_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerAge.setAdapter(years_adapter);
-
-        //selezione età da spinner
-        spinnerAge.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                age = (int)id;
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                age = 0;
-            }
-        });
-        //selezione sesso da spinner
-        spinnerSex.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                male = (id==0)? false:true;
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                male = false;
-            }
-        });
-
-        //inserimento nome su EditText
-        spaceName.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                name = null;
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                name = s.toString();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                spaceName = (EditText) s;
-                name = s.toString();
-            }
-        });
-
-        spaceWeight.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                weight = Integer.parseInt(s.toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                weight = Integer.parseInt(s.toString());
-            }
-        });
+        //inutile per il momento
+        age = spinnerAge.getSelectedItemPosition();
 
 
+    }
 
+    @SuppressLint("CommitPrefsEdit")
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        //references dei widgets per leggerne lo stato
+        Spinner spinnerAge=(Spinner) findViewById(R.id.age_spinner);
+        int age = spinnerAge.getSelectedItemPosition();
+        EditText spaceWeight=(EditText) findViewById(R.id.weight);
+        int weight = Integer.parseInt(spaceWeight.getText().toString());
+        CheckBox checkNot = (CheckBox) findViewById(R.id.less_notifications);
+        boolean lessnot = checkNot.isChecked();
+        Spinner spinnerSex=(Spinner) findViewById(R.id.sex_spinner);
+        boolean male = (spinnerSex.getSelectedItemPosition()==1)?true:false;
+        EditText spaceName=(EditText) findViewById(R.id.name_space);
+        String name = spaceName.getText().toString();
+
+        editor.putInt("age_value",age);
+        editor.putInt("weight_value",weight);
+        editor.putBoolean("lessnot_value",lessnot);
+        editor.putBoolean("male_value",male);
+        editor.putString("name_value",name);
+
+        editor.commit();
     }
 
 

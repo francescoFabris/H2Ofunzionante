@@ -6,6 +6,7 @@
     <string name="sport_insert">When do you start playing sports?</string>
     <string name="weight_insert">What is your weight?</string>
     <string name="time_insert">Wake-Sleep range</string>
+    <string name="less_not">Less Notifications</string>
     <string name="wake">Wake</string>
     <string name="sleep">Sleep</string>
     <string name="str1">YOU DRANK</string>

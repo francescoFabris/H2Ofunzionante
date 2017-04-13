@@ -1,6 +1,7 @@
 package it.unipd.dei.esp1617.h2o;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,18 +13,22 @@ public class MainActivity extends AppCompatActivity {
     private Button bu;
     private TextView tv1,tv2,tv3,tv4;
     private FloatingActionButton faplus, faminus;
-    private static int drunkGlasses =0;
+    private static int drunkGlasses;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        int dg=preferences.getInt("drunk_glasses",0);
+        drunkGlasses=dg;
+
         tv1 = (TextView) findViewById(R.id.textView1);
         tv2 = (TextView) findViewById(R.id.textView2);
         tv3 = (TextView) findViewById(R.id.textView3);
         tv4 = (TextView) findViewById(R.id.textView4);
-        tv2.setText((CharSequence) bu);
-        tv4.setText((drunkGlasses>5)?"\"@string/c2\"":"\"@string/c1\"");
+        changeViewsText();
 
         bu = (Button) findViewById(R.id.apri_second);
         /**
@@ -46,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         faplus.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                drunkGlasses++;
+                incrementGlasses();
             }
         });
         /**
@@ -55,15 +60,30 @@ public class MainActivity extends AppCompatActivity {
         faminus.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                drunkGlasses--;
+                decrementGlasses();
             }
         });
     }
 
+    @Override
+    protected void onPause(){
+        super.onPause();
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("drunk_glasses",drunkGlasses);
+        editor.commit();
+    }
+
     public void incrementGlasses(){
         drunkGlasses++;
+        changeViewsText();
     }
     public void decrementGlasses(){
         drunkGlasses--;
+        changeViewsText();
+    }
+    public void changeViewsText(){
+        tv2.setText(drunkGlasses+"");
+        tv4.setText((drunkGlasses>5)?R.string.c2:R.string.c1);
     }
 }
