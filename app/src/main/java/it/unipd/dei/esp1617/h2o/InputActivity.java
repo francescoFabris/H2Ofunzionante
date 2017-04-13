@@ -13,6 +13,10 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.ImageSwitcher;
+import android.content.Intent;
+import android.os.Bundle;
+import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 
 
 
@@ -33,6 +37,8 @@ public class InputActivity extends AppCompatActivity
 
 
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +52,8 @@ public class InputActivity extends AppCompatActivity
         spaceWake=(EditText) findViewById(R.id.wake_time);
         lessButton=(RadioButton) findViewById(R.id.less_notify);
 
+        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+        i.putExtra("booleanSex",male);
 
 
         ArrayAdapter<CharSequence> sex_adapter = ArrayAdapter.createFromResource(this, R.array.sex_array, android.R.layout.simple_spinner_item);
@@ -97,7 +105,24 @@ public class InputActivity extends AppCompatActivity
             }
         });
 
+
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        boolean bln_sex = preferences.getBoolean("SexBln", true);
+        male = bln_sex;
+
     }
 
+    @SuppressLint("CommitPrefEdits")
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
 
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        editor.putBoolean("SexBln", male);
+        editor.commit();
+
+    }
 }
