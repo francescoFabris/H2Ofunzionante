@@ -41,18 +41,14 @@ public class MainActivity extends AppCompatActivity {
 
         faplus = (FloatingActionButton)findViewById(R.id.plus_button);
         faminus = (FloatingActionButton)findViewById(R.id.minus_button);
-        /**
-         * Incremento del numero di bicchieri bevuti dall'utente
-         */
+        //Incremento del numero di bicchieri bevuti dall'utente
         faplus.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 incrementGlasses();
             }
         });
-        /**
-         * Decremento del numero di bicchieri bevuti dall'utente
-         */
+        //Decremento del numero di bicchieri bevuti dall'utente
         faminus.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -67,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt("drunk_glasses",drunkGlasses);
-        editor.commit();
+        editor.apply();
     }
 
     public void incrementGlasses(){
@@ -79,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         changeViewsText();
     }
     public void changeViewsText(){
-        tv2.setText(drunkGlasses+"");
+        tv2.setText(""+drunkGlasses);
         tv4.setText((drunkGlasses>5)?R.string.c2:R.string.c1);
     }
 }
