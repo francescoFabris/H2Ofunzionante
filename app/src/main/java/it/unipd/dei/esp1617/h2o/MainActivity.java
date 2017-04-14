@@ -71,11 +71,14 @@ public class MainActivity extends AppCompatActivity {
         changeViewsText();
     }
     public void decrementGlasses(){
-        drunkGlasses--;
-        changeViewsText();
+        if(drunkGlasses>0){
+            drunkGlasses--;
+            changeViewsText();
+        }
+
     }
     public void changeViewsText(){
-        tv2.setText(""+drunkGlasses);
+        tv2.setText(Integer.toString(drunkGlasses));
         tv4.setText((drunkGlasses>5)?R.string.c2:R.string.c1);
     }
 }

@@ -13,5 +13,7 @@
     <string name="str2">GLASSES OF WATER TODAY</string>
     <string name="c1">you could do better</string>
     <string name="c2">good job</string>
-
+    <string name="toast_weight">Insert your real weight</string>
+    <string name="toast_hour">Insert a real hour</string>
+    <string name="toast_name">Wow! Your name is really long!</string>
 </resources>
