@@ -74,11 +74,11 @@ public class MainActivity extends AppCompatActivity {
         setToastNegNotSent();
     }
 
-    public void incrementGlasses(){
+    private void incrementGlasses(){
         drunkGlasses++;
         changeViewsText();
     }
-    public void decrementGlasses(){
+    private void decrementGlasses(){
         if(drunkGlasses>0){
             drunkGlasses--;
             changeViewsText();
@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-    public void changeViewsText(){
+    private void changeViewsText(){
         tv2.setText(Integer.toString(drunkGlasses));
         tv4.setText((drunkGlasses>5)?R.string.c2:R.string.c1);
     }

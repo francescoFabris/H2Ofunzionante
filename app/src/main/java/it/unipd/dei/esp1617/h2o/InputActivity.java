@@ -1,20 +1,16 @@
 package it.unipd.dei.esp1617.h2o;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
+//import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
-import java.lang.Number;
 /**
  * Created by boemd on 04/04/2017.
  */
@@ -52,7 +48,7 @@ public class InputActivity extends AppCompatActivity
         checkNot.setChecked(lessnot);
 
         //EditText
-        if(name==""||name==null)
+        if(name.equals(""))
         {
             name="Al Bano Carrisi";
         }
@@ -83,6 +79,9 @@ public class InputActivity extends AppCompatActivity
             }
         });
 
+        if(weight==0)
+            weight=50;
+
         spaceWeight.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -98,7 +97,7 @@ public class InputActivity extends AppCompatActivity
             public void afterTextChanged(Editable s) {
 
 
-                if(!isToastWeightSent()&&Double.parseDouble(0+s.toString())>199){       //parseInt da errore se s è vuota!! E' necessario aggoingere lo 0 iniziale
+                if(!isToastWeightSent()&&Double.parseDouble(0+s.toString())>199){       //parseInt da errore se s è vuota!! E' necessario aggiungere lo 0 iniziale
                     Toast.makeText(InputActivity.this, R.string.toast_weight,Toast.LENGTH_SHORT).show();
                     setToastWeightSent();
                 }
@@ -134,7 +133,7 @@ public class InputActivity extends AppCompatActivity
 
     }
 
-    @SuppressLint("CommitPrefsEdit")
+    //@SuppressLint("CommitPrefsEdit")
     @Override
     protected void onPause()
     {
@@ -147,14 +146,15 @@ public class InputActivity extends AppCompatActivity
         Spinner spinnerAge=(Spinner) findViewById(R.id.age_spinner);
         int age = spinnerAge.getSelectedItemPosition();
         EditText spaceWeight=(EditText) findViewById(R.id.weight);
-        Double w = Double.parseDouble(spaceWeight.getText().toString());
+        Double w = Double.parseDouble(0+spaceWeight.getText().toString());
         int weight = w.intValue();
-        CheckBox checkNot = (CheckBox) findViewById(R.id.less_notifications);
-        boolean lessnot = checkNot.isChecked();
+        //weight = (weight==0)?50:weight;
         Spinner spinnerSex=(Spinner) findViewById(R.id.sex_spinner);
-        boolean male = (spinnerSex.getSelectedItemPosition()==1)?true:false;
+        boolean male = spinnerSex.getSelectedItemPosition()==1;
         EditText spaceName=(EditText) findViewById(R.id.name_space);
         String name = spaceName.getText().toString();
+        CheckBox checkBox = (CheckBox)findViewById(R.id.less_notifications) ;
+        boolean lessnot = checkBox.isChecked();
 
         //salvataggio dello stato persistente
         editor.putInt("age_value",age);
