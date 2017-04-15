@@ -14,7 +14,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
-
+import java.lang.Number;
 /**
  * Created by boemd on 04/04/2017.
  */
@@ -96,7 +96,9 @@ public class InputActivity extends AppCompatActivity
 
             @Override
             public void afterTextChanged(Editable s) {
-                if(!isToastWeightSent()&&Integer.parseInt(s.toString())>199){
+
+
+                if(!isToastWeightSent()&&Double.parseDouble(0+s.toString())>199){       //parseInt da errore se s è vuota!! E' necessario aggoingere lo 0 iniziale
                     Toast.makeText(InputActivity.this, R.string.toast_weight,Toast.LENGTH_SHORT).show();
                     setToastWeightSent();
                 }
@@ -145,7 +147,8 @@ public class InputActivity extends AppCompatActivity
         Spinner spinnerAge=(Spinner) findViewById(R.id.age_spinner);
         int age = spinnerAge.getSelectedItemPosition();
         EditText spaceWeight=(EditText) findViewById(R.id.weight);
-        int weight = Integer.parseInt(spaceWeight.getText().toString());
+        Double w = Double.parseDouble(spaceWeight.getText().toString());
+        int weight = w.intValue();
         CheckBox checkNot = (CheckBox) findViewById(R.id.less_notifications);
         boolean lessnot = checkNot.isChecked();
         Spinner spinnerSex=(Spinner) findViewById(R.id.sex_spinner);

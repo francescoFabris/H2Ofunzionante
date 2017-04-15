@@ -16,4 +16,5 @@
     <string name="toast_weight">Insert your real weight</string>
     <string name="toast_hour">Insert a real hour</string>
     <string name="toast_name">Wow! Your name is really long!</string>
+    <string name="toast_neg">You cannot drink less than zero glasses of water!</string>
 </resources>

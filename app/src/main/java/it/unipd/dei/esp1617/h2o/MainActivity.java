@@ -8,12 +8,14 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     private Button bu;
     private TextView tv1,tv2,tv3,tv4;
     private FloatingActionButton faplus, faminus;
     private static int drunkGlasses;
+    private boolean toastNegSent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +68,12 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
     }
 
+    @Override
+    protected void onResume(){
+        super.onResume();
+        setToastNegNotSent();
+    }
+
     public void incrementGlasses(){
         drunkGlasses++;
         changeViewsText();
@@ -75,10 +83,25 @@ public class MainActivity extends AppCompatActivity {
             drunkGlasses--;
             changeViewsText();
         }
+        else if(!isToastNegSent()){
+            Toast.makeText(MainActivity.this, R.string.toast_neg,Toast.LENGTH_SHORT).show();
+            setToastNegSent();
+        }
+
 
     }
     public void changeViewsText(){
         tv2.setText(Integer.toString(drunkGlasses));
         tv4.setText((drunkGlasses>5)?R.string.c2:R.string.c1);
+    }
+
+    private boolean isToastNegSent(){
+        return toastNegSent;
+    }
+    private void setToastNegSent(){
+        toastNegSent=true;
+    }
+    private void setToastNegNotSent(){
+        toastNegSent=false;
     }
 }
