@@ -18,20 +18,21 @@ import android.widget.Toast;
 public class InputActivity extends AppCompatActivity
 {
     private boolean toastNameSent,toastWeightSent;
-
+    private boolean modificationsHaveOccurred = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_input);
 
-        //dati persistenti salvati come SharedpPeferences
+        //dati persistenti salvati come SharedPeferences
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         int age = preferences.getInt("age_value",0);
         int weight = preferences.getInt("weight_value",50);
         boolean lessnot = preferences.getBoolean("lessnot_value",false);
         boolean male = preferences.getBoolean("male_value",false);  //male = true, female = false;
         String name = preferences.getString("name_value", "Al Bano Carrisi");
+        int quantity = preferences.getInt("quantity", 0);
         //mancano gli orari!!
 
         //aggancio widget con IDs
@@ -162,8 +163,15 @@ public class InputActivity extends AppCompatActivity
         editor.putBoolean("lessnot_value",lessnot);
         editor.putBoolean("male_value",male);
         editor.putString("name_value",name);
+        if(modificationsHaveOccurred){
+            editor.putInt("quantity",getQuantity());
+        }
         //salvataggio in mutua esclusione
         editor.commit();
+
+        if(modificationsHaveOccurred){
+            scheduleNotifications();
+        }
     }
 
     @Override
@@ -193,4 +201,28 @@ public class InputActivity extends AppCompatActivity
         toastWeightSent=false;
     }
 
+    //algoritmo che determina la quantità d'acqua da consumare
+    private int getQuantity(){
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        int age = preferences.getInt("age_value",0);
+        int weight = preferences.getInt("weight_value",50);
+        boolean lessnot = preferences.getBoolean("lessnot_value",false);
+        boolean male = preferences.getBoolean("male_value",false);  //male = true, female = false;
+        String name = preferences.getString("name_value", "Al Bano Carrisi");
+        boolean sport;
+        int quantity=0;
+
+        //corpo algoritmo
+
+        return quantity;
+    }
+
+    //questo metodo viene invocato quando l'activity viene messa in pausa se i valori di input subiscono delle modifiche
+    //le gli orari delle notifiche vengono schedulati utilizzando il nuovo input
+    private void scheduleNotifications()
+    {
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        int quantity = preferences.getInt("quantity", 0);
+        MyTime wake, sleep, sport;
+    }
 }

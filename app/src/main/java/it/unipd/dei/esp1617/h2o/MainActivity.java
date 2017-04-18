@@ -25,9 +25,9 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         drunkGlasses=preferences.getInt("drunk_glasses",0);
 
-        tv1 = (TextView) findViewById(R.id.textView1);
+        //tv1 = (TextView) findViewById(R.id.textView1);inutile
         tv2 = (TextView) findViewById(R.id.textView2);
-        tv3 = (TextView) findViewById(R.id.textView3);
+        //tv3 = (TextView) findViewById(R.id.textView3);inutile
         tv4 = (TextView) findViewById(R.id.textView4);
         changeViewsText();
 
