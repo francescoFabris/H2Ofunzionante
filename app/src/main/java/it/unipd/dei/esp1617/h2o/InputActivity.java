@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -25,11 +27,13 @@ public class InputActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_input);
 
+        modificationsHaveOccurred=false;
         //dati persistenti salvati come SharedPeferences
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         int age = preferences.getInt("age_value",0);
         int weight = preferences.getInt("weight_value",50);
         boolean lessnot = preferences.getBoolean("lessnot_value",false);
+        boolean sport = preferences.getBoolean("sport_value",false);
         boolean male = preferences.getBoolean("male_value",false);  //male = true, female = false;
         String name = preferences.getString("name_value", "Al Bano Carrisi");
         int quantity = preferences.getInt("quantity", 0);
@@ -97,7 +101,7 @@ public class InputActivity extends AppCompatActivity
             @Override
             public void afterTextChanged(Editable s) {
 
-
+                modificationsHaveOccurred=true;
                 if(!isToastWeightSent()&&Double.parseDouble(0+s.toString())>199){       //parseInt da errore se s è vuota!! E' necessario aggiungere lo 0 iniziale
                     Toast.makeText(InputActivity.this, R.string.toast_weight,Toast.LENGTH_SHORT).show();
                     setToastWeightSent();
@@ -111,18 +115,10 @@ public class InputActivity extends AppCompatActivity
         sex_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerSex.setAdapter(sex_adapter);
         spinnerSex.setSelection(male?1:0);
-
-
-        ArrayAdapter<CharSequence> years_adapter = ArrayAdapter.createFromResource(this, R.array.years_array, android.R.layout.simple_spinner_item);
-        sex_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerAge.setAdapter(years_adapter);
-        spinnerAge.setSelection(age);
-        //quello che segue è inutile, ma per il momento lo lascio perché non si sa mai
-        /*
-        spinnerAge.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        spinnerSex.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                spinnerAge.setSelection(spinnerAge.getSelectedItemPosition());
+                modificationsHaveOccurred=true;
             }
 
             @Override
@@ -130,7 +126,22 @@ public class InputActivity extends AppCompatActivity
 
             }
         });
-        */
+
+        ArrayAdapter<CharSequence> years_adapter = ArrayAdapter.createFromResource(this, R.array.years_array, android.R.layout.simple_spinner_item);
+        sex_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerAge.setAdapter(years_adapter);
+        spinnerAge.setSelection(age);
+        spinnerAge.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                modificationsHaveOccurred=true;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
     }
 
@@ -154,8 +165,11 @@ public class InputActivity extends AppCompatActivity
         boolean male = spinnerSex.getSelectedItemPosition()==1;
         EditText spaceName=(EditText) findViewById(R.id.name_space);
         String name = spaceName.getText().toString();
-        CheckBox checkBox = (CheckBox)findViewById(R.id.less_notifications) ;
-        boolean lessnot = checkBox.isChecked();
+        CheckBox checkNoti = (CheckBox)findViewById(R.id.less_notifications) ;
+        boolean lessnot = checkNoti.isChecked();
+        CheckBox checkSport = (CheckBox)findViewById(R.id.less_notifications) ;
+        boolean sport = checkNoti.isChecked();
+
 
         //salvataggio dello stato persistente
         editor.putInt("age_value",age);
@@ -163,6 +177,7 @@ public class InputActivity extends AppCompatActivity
         editor.putBoolean("lessnot_value",lessnot);
         editor.putBoolean("male_value",male);
         editor.putString("name_value",name);
+        editor.putBoolean("sport_value",sport);
         if(modificationsHaveOccurred){
             editor.putInt("quantity",getQuantity());
         }
@@ -206,19 +221,40 @@ public class InputActivity extends AppCompatActivity
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         int age = preferences.getInt("age_value",0);
         int weight = preferences.getInt("weight_value",50);
-        boolean lessnot = preferences.getBoolean("lessnot_value",false);
         boolean male = preferences.getBoolean("male_value",false);  //male = true, female = false;
-        String name = preferences.getString("name_value", "Al Bano Carrisi");
-        boolean sport;
-        int quantity=0;
+        boolean sport = preferences.getBoolean("sport_value",false);
+        int quantity=0; //quantità determinata in cl
+        if(age<=2) quantity=500;
+        else if(age<5) quantity=900;
+        else if(age<10) quantity=1100;
+        else if(age<12) quantity=1300;
+        else{
+            if(male){
+                quantity=1700;
+                if(age>16)
+                    quantity+=300;
+                if(sport)
+                    quantity+=200;
+                if(weight>80)
+                    quantity+=100;
+            }
+            else{
+                quantity=1500;
+                if(age>16)
+                    quantity+=300;
+                if(sport)
+                    quantity+=200;
+                if(weight>70)
+                    quantity+=100;
+            }
+        }
 
-        //corpo algoritmo
 
         return quantity;
     }
 
     //questo metodo viene invocato quando l'activity viene messa in pausa se i valori di input subiscono delle modifiche
-    //le gli orari delle notifiche vengono schedulati utilizzando il nuovo input
+    //gli orari delle notifiche vengono schedulati utilizzando il nuovo input
     private void scheduleNotifications()
     {
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
