@@ -1,8 +1,12 @@
 package it.unipd.dei.esp1617.h2o;
 
 //import android.annotation.SuppressLint;
+import android.app.TimePickerDialog;
 import android.content.SharedPreferences;
+import android.icu.util.Calendar;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -12,6 +16,8 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 /**
  * Created by boemd on 04/04/2017.
@@ -37,20 +43,27 @@ public class InputActivity extends AppCompatActivity
         boolean male = preferences.getBoolean("male_value",false);  //male = true, female = false;
         String name = preferences.getString("name_value", "Al Bano Carrisi");
         int quantity = preferences.getInt("quantity", 0);
-        //mancano gli orari!!
+        final int hourW = preferences.getInt("hour_w", 7);
+        final int minW = preferences.getInt("min_w", 0);
+        final int hourS = preferences.getInt("hour_s", 23);
+        final int minS = preferences.getInt("min_s", 0);
+
 
         //aggancio widget con IDs
         final EditText spaceName=(EditText) findViewById(R.id.name_space);
         EditText spaceWeight=(EditText) findViewById(R.id.weight);
-        EditText spaceSport=(EditText) findViewById(R.id.sport_time);
+        //EditText spaceSport=(EditText) findViewById(R.id.sport_time);
         Spinner spinnerSex=(Spinner) findViewById(R.id.sex_spinner);
         final Spinner spinnerAge=(Spinner) findViewById(R.id.age_spinner);
-        EditText spaceSleep=(EditText) findViewById(R.id.sleep_time);
-        EditText spaceWake=(EditText) findViewById(R.id.wake_time);
+        TextView wakeHour=(TextView) findViewById(R.id.wake_hour);
+        TextView wakeMin=(TextView) findViewById(R.id.wake_min);
+        TextView sleepHour=(TextView) findViewById(R.id.sleep_hour);
+        TextView sleepMin=(TextView) findViewById(R.id.sleep_min);
         CheckBox checkNot = (CheckBox) findViewById(R.id.less_notifications);
-
+        CheckBox checkSport= (CheckBox) findViewById(R.id.sport_box);
         //CheckBox
         checkNot.setChecked(lessnot);
+        checkSport.setChecked(sport);
 
         //EditText
         if(name.equals(""))
@@ -59,7 +72,6 @@ public class InputActivity extends AppCompatActivity
         }
         spaceName.setText(name);
         spaceWeight.setText(Integer.toString(weight)); //Non è stato messo l'Integer puro perché causava un bug nell'apertura
-        //spaceSport.setText();
         //spaceSleep.setText();
         //spaceSleep.setText();
 
@@ -143,7 +155,75 @@ public class InputActivity extends AppCompatActivity
             }
         });
 
+
+        wakeHour.setText(Integer.toString(hourW));
+        wakeMin.setText(Integer.toString(minW));
+        sleepHour.setText(Integer.toString(hourS));
+        sleepMin.setText(Integer.toString(minS));
+
+        wakeHour.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                showTimeDialogW(v, hourW, minW);
+            }
+        });
+
+        wakeMin.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                showTimeDialogW(v, hourW, minW);
+            }
+        });
+
+        sleepHour.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                showTimeDialogS(v, hourS, minS);
+            }
+        });
+
+        sleepMin.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                showTimeDialogS(v, hourS, minS);
+            }
+        });
+
     }
+
+    private void showTimeDialogW(View v, int hour, int min){
+        (new TimePickerDialog(InputActivity.this, timeSetListenerW, hour,min,true)).show();
+    }
+
+    private void showTimeDialogS(View v, int hour, int min){
+        (new TimePickerDialog(InputActivity.this, timeSetListenerS, hour,min,true)).show();
+    }
+
+    private TimePickerDialog.OnTimeSetListener timeSetListenerW = new TimePickerDialog.OnTimeSetListener() {
+        @Override
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute)
+        {
+            int hourW = hourOfDay;
+            int minW = minute;
+            TextView wakeH = (TextView) findViewById(R.id.wake_hour);
+            TextView wakeM = (TextView) findViewById(R.id.wake_min);
+            wakeH.setText(Integer.toString(hourW));
+            wakeM.setText(Integer.toString(minW));
+        }
+    };
+
+    private TimePickerDialog.OnTimeSetListener timeSetListenerS = new TimePickerDialog.OnTimeSetListener() {
+        @Override
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute)
+        {
+            int hourW = hourOfDay;
+            int minW = minute;
+            TextView sleepH = (TextView) findViewById(R.id.sleep_hour);
+            TextView sleepM = (TextView) findViewById(R.id.sleep_min);
+            sleepH.setText(Integer.toString(hourW));
+            sleepM.setText(Integer.toString(minW));
+        }
+    };
 
     //@SuppressLint("CommitPrefsEdit")
     @Override
@@ -167,8 +247,12 @@ public class InputActivity extends AppCompatActivity
         String name = spaceName.getText().toString();
         CheckBox checkNoti = (CheckBox)findViewById(R.id.less_notifications) ;
         boolean lessnot = checkNoti.isChecked();
-        CheckBox checkSport = (CheckBox)findViewById(R.id.less_notifications) ;
-        boolean sport = checkNoti.isChecked();
+        CheckBox checkSport = (CheckBox)findViewById(R.id.sport_box) ;
+        boolean sport = checkSport.isChecked();
+        int hourW = 0+Integer.parseInt(((TextView)findViewById(R.id.wake_hour)).getText().toString());
+        int minW = 0+Integer.parseInt(((TextView)findViewById(R.id.wake_min)).getText().toString());
+        int hourS = 0+Integer.parseInt(((TextView)findViewById(R.id.sleep_hour)).getText().toString());
+        int minS = 0+Integer.parseInt(((TextView)findViewById(R.id.sleep_min)).getText().toString());
 
 
         //salvataggio dello stato persistente
@@ -178,14 +262,20 @@ public class InputActivity extends AppCompatActivity
         editor.putBoolean("male_value",male);
         editor.putString("name_value",name);
         editor.putBoolean("sport_value",sport);
+        editor.putInt("hour_w",hourW);
+        editor.putInt("min_w",minW);
+        editor.putInt("hour_s",hourS);
+        editor.putInt("min_s",minS);
+
         if(modificationsHaveOccurred){
             editor.putInt("quantity",getQuantity());
         }
+
         //salvataggio in mutua esclusione
         editor.commit();
 
         if(modificationsHaveOccurred){
-            scheduleNotifications();
+            //scheduleNotifications();
         }
     }
 
@@ -253,12 +343,23 @@ public class InputActivity extends AppCompatActivity
         return quantity;
     }
 
+
+    /*
     //questo metodo viene invocato quando l'activity viene messa in pausa se i valori di input subiscono delle modifiche
     //gli orari delle notifiche vengono schedulati utilizzando il nuovo input
     private void scheduleNotifications()
     {
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        int quantity = preferences.getInt("quantity", 0);
-        MyTime wake, sleep, sport;
+        int bicchieri = (Integer) (preferences.getInt("quantity", 0))/200;
+        MyTime wake, sleep;
+        int hours[] = new int[24];
+        int slot = sleep.getHour()-wake.getHour()+1;
+        int free = slot-bicchieri; //se>0 ho più slot che bicchieri
+        int extra = -free;
+        if(extra>0){
+
+        }
     }
+    */
+
 }
