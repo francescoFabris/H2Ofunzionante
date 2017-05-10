@@ -3,13 +3,14 @@ package it.unipd.dei.esp1617.h2o;
 //import android.annotation.SuppressLint;
 import android.app.TimePickerDialog;
 import android.content.SharedPreferences;
-import android.icu.util.Calendar;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -19,6 +20,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.Calendar;
+import java.lang.Number;
+import java.util.Date;
+
 /**
  * Created by boemd on 04/04/2017.
  */
@@ -27,7 +37,9 @@ public class InputActivity extends AppCompatActivity
 {
     private boolean toastNameSent,toastWeightSent;
     private boolean modificationsHaveOccurred = false;
+    private NotificationTemplate[] notArray = new NotificationTemplate[24];
 
+    private static final String TAG = "InputActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -230,7 +242,6 @@ public class InputActivity extends AppCompatActivity
     protected void onPause()
     {
         super.onPause();
-
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
@@ -253,6 +264,8 @@ public class InputActivity extends AppCompatActivity
         int minW = 0+Integer.parseInt(((TextView)findViewById(R.id.wake_min)).getText().toString());
         int hourS = 0+Integer.parseInt(((TextView)findViewById(R.id.sleep_hour)).getText().toString());
         int minS = 0+Integer.parseInt(((TextView)findViewById(R.id.sleep_min)).getText().toString());
+
+        fillNotArray(getQuantity(), lessnot, hourW, minW,hourS, minS);
 
 
         //salvataggio dello stato persistente
@@ -313,7 +326,7 @@ public class InputActivity extends AppCompatActivity
         int weight = preferences.getInt("weight_value",50);
         boolean male = preferences.getBoolean("male_value",false);  //male = true, female = false;
         boolean sport = preferences.getBoolean("sport_value",false);
-        int quantity=0; //quantità determinata in cl
+        int quantity=0; //quantità determinata in ml
         if(age<=2) quantity=500;
         else if(age<5) quantity=900;
         else if(age<10) quantity=1100;
@@ -343,23 +356,105 @@ public class InputActivity extends AppCompatActivity
         return quantity;
     }
 
+    private void fillNotArray(int quantity, boolean lessnot, int wakeH, int wakeM, int sleepH, int sleepM){
+        int hour = sleepH- wakeH;
+        boolean b = false;
+        double mlph = quantity/hour;
 
-    /*
-    //questo metodo viene invocato quando l'activity viene messa in pausa se i valori di input subiscono delle modifiche
-    //gli orari delle notifiche vengono schedulati utilizzando il nuovo input
-    private void scheduleNotifications()
-    {
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        int bicchieri = (Integer) (preferences.getInt("quantity", 0))/200;
-        MyTime wake, sleep;
-        int hours[] = new int[24];
-        int slot = sleep.getHour()-wake.getHour()+1;
-        int free = slot-bicchieri; //se>0 ho più slot che bicchieri
-        int extra = -free;
-        if(extra>0){
+        if(lessnot)
+        {
+            Calendar c0 = Calendar.getInstance();
+            c0.set(Calendar.HOUR_OF_DAY, wakeH+2);
+            c0.set(Calendar.MINUTE, 30);
 
+            Calendar c1 = Calendar.getInstance();
+            c1.set(Calendar.HOUR_OF_DAY, wakeH+6);
+            c1.set(Calendar.MINUTE, 30);
+
+            Calendar c2 = Calendar.getInstance();
+            c2.set(Calendar.HOUR_OF_DAY, wakeH+11);
+            c2.set(Calendar.MINUTE, 30);
+
+
+            int glasses = (quantity-(quantity%150))/150+1;
+            int q;
+            switch (glasses){
+                case 1:  q = (glasses+1)/3;
+                    break;
+                case 2:  q = (glasses+2)/3;
+                    break;
+                default: q=(glasses)/3;
+                    break;
+            }
+
+
+            notArray[wakeH+2]= new NotificationTemplate(0, c0, q);
+            notArray[wakeH+6]= new NotificationTemplate(1, c1, q);
+            notArray[wakeH+11]= new NotificationTemplate(2, c2, q);
+        }
+        else{
+            for(int i=wakeH; i<sleepH+1; i++){
+
+                Calendar c = Calendar.getInstance();
+                c.set(Calendar.HOUR_OF_DAY,i);
+                c.set(Calendar.MINUTE, 30);
+                if(i==wakeH){
+                    if (wakeM>50)
+                    {
+                        c.set(Calendar.HOUR_OF_DAY,i+1);
+                        c.set(Calendar.MINUTE, wakeM-50);
+                    }
+                    else
+                        c.set(Calendar.MINUTE, wakeM+10);
+                }
+                if(i==sleepH){
+                    if(sleepM<10)
+                    {
+                        c.set(Calendar.HOUR_OF_DAY,i-1);
+                        c.set(Calendar.MINUTE, wakeM+50);
+                    }
+                    else{
+                        c.set(Calendar.MINUTE, sleepM-10);
+                    }
+                }
+
+                int q;
+                if(!b)
+                {
+                    Double d = (mlph - (mlph%150))/150 +1;
+                    q =Integer.valueOf(d.intValue());
+                    b=true;
+                }
+                else{
+                    Double d = (mlph - (mlph%150))/150 +1;
+                    q =Integer.valueOf(d.intValue());
+                }
+                notArray[i]= new NotificationTemplate(i, c, q);
+            }
+        }
+
+    }
+
+    //inizializzo l'array con vecchio input
+    private void initializeNotArray(){
+
+    }
+
+    //sovrascrivo file col nuovo input
+    private void storeNotArray(){
+        try{
+            FileOutputStream fos = new FileOutputStream("t.tmp");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            for(int i=0; i<24; i++)
+                oos.writeObject(notArray[i]);
+            oos.close();
+            fos.close();
+        }
+        catch(FileNotFoundException e){
+            Log.d(TAG, getResources().getString(R.string.file_not_found));
+        }
+        catch (IOException e){
+            Log.d(TAG, getResources().getString(R.string.io_exception));
         }
     }
-    */
-
 }
