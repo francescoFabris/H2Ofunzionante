@@ -16,7 +16,6 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton faplus, faminus;
     private static int drunkGlasses;
     private boolean toastNegSent;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
         tv2.setText(Integer.toString(drunkGlasses));
         tv4.setText((drunkGlasses>5)?R.string.c2:R.string.c1);
     }
+
 
     private boolean isToastNegSent(){
         return toastNegSent;

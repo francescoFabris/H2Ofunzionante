@@ -3,13 +3,14 @@ package it.unipd.dei.esp1617.h2o;
 //import android.annotation.SuppressLint;
 import android.app.TimePickerDialog;
 import android.content.SharedPreferences;
-import java.util.Calendar;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -19,6 +20,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.Calendar;
+import java.lang.Number;
+import java.util.Date;
+
 /**
  * Created by boemd on 04/04/2017.
  */
@@ -27,10 +37,9 @@ public class InputActivity extends AppCompatActivity
 {
     private boolean toastNameSent,toastWeightSent;
     private boolean modificationsHaveOccurred = false;
+    private NotificationTemplate[] notArray = new NotificationTemplate[24];
 
-    private int hourS = -1, minS = -1, hourW = -1, minW = -1;
-    static final int TIME_DIALOG_ID = 0;
-
+    private static final String TAG = "InputActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,14 +55,10 @@ public class InputActivity extends AppCompatActivity
         boolean male = preferences.getBoolean("male_value",false);  //male = true, female = false;
         String name = preferences.getString("name_value", "Al Bano Carrisi");
         int quantity = preferences.getInt("quantity", 0);
-        hourW = preferences.getInt("hour_w", 7);
-        minW = preferences.getInt("min_w", 0);
-        hourS = preferences.getInt("hour_s", 23);
-        minS = preferences.getInt("min_s", 0);
-
-        String wake = preferences.getString("time_wake", hourW+" : "+minW);
-        String sleep = preferences.getString("time_sleep", hourS+" : "+minS);
-
+        final int hourW = preferences.getInt("hour_w", 7);
+        final int minW = preferences.getInt("min_w", 0);
+        final int hourS = preferences.getInt("hour_s", 23);
+        final int minS = preferences.getInt("min_s", 0);
 
 
         //aggancio widget con IDs
@@ -62,8 +67,10 @@ public class InputActivity extends AppCompatActivity
         //EditText spaceSport=(EditText) findViewById(R.id.sport_time);
         Spinner spinnerSex=(Spinner) findViewById(R.id.sex_spinner);
         final Spinner spinnerAge=(Spinner) findViewById(R.id.age_spinner);
-        TextView spaceSleep=(TextView) findViewById(R.id.sleep_time);
-        TextView spaceWake=(TextView) findViewById(R.id.wake_time);
+        TextView wakeHour=(TextView) findViewById(R.id.wake_hour);
+        TextView wakeMin=(TextView) findViewById(R.id.wake_min);
+        TextView sleepHour=(TextView) findViewById(R.id.sleep_hour);
+        TextView sleepMin=(TextView) findViewById(R.id.sleep_min);
         CheckBox checkNot = (CheckBox) findViewById(R.id.less_notifications);
         CheckBox checkSport= (CheckBox) findViewById(R.id.sport_box);
         //CheckBox
@@ -160,52 +167,48 @@ public class InputActivity extends AppCompatActivity
             }
         });
 
-        spaceSleep.setText(sleep);
-        spaceWake.setText(wake);
 
-        spaceSleep.setOnClickListener(new EditText.OnClickListener() {
-            public void onClick(View v) {
-                if (hourS == -1 || minS == -1) {
-                    Calendar c = Calendar.getInstance();
-                    hourS = c.get(Calendar.HOUR);
-                    minS = c.get(Calendar.MINUTE);
-                }
-                showTimeDialogS(hourS, minS);
+        wakeHour.setText(Integer.toString(hourW));
+        wakeMin.setText(Integer.toString(minW));
+        sleepHour.setText(Integer.toString(hourS));
+        sleepMin.setText(Integer.toString(minS));
+
+        wakeHour.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                showTimeDialogW(v, hourW, minW);
             }
         });
 
-        spaceWake.setOnClickListener(new EditText.OnClickListener() {
-            public void onClick(View v) {
-                if (hourW == -1 || minW == -1) {
-                    Calendar c = Calendar.getInstance();
-                    hourW = c.get(Calendar.HOUR);
-                    minW = c.get(Calendar.MINUTE);
-                }
+        wakeMin.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                showTimeDialogW(v, hourW, minW);
+            }
+        });
 
-                showTimeDialogW(hourW, minW);
+        sleepHour.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                showTimeDialogS(v, hourS, minS);
+            }
+        });
+
+        sleepMin.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                showTimeDialogS(v, hourS, minS);
             }
         });
 
     }
 
-    public void showTimeDialogS(int hour, int min) {
-        (new TimePickerDialog(InputActivity.this, timeSetListenerS, hour, min, true)).show();
-    }
-
-    private TimePickerDialog.OnTimeSetListener timeSetListenerS = new TimePickerDialog.OnTimeSetListener() {
-        @Override
-        public void onTimeSet(TimePicker view, int hourOfDay, int minute)
-        {
-            int hourS = hourOfDay;
-            int minS = minute;
-            TextView spaceSleep = (TextView) findViewById(R.id.sleep_time);
-            spaceSleep.setText(new StringBuilder().append(hourS).append(" : ").append(minS));
-
-        }
-    };
-
-    private void showTimeDialogW(int hour, int min){
+    private void showTimeDialogW(View v, int hour, int min){
         (new TimePickerDialog(InputActivity.this, timeSetListenerW, hour,min,true)).show();
+    }
+
+    private void showTimeDialogS(View v, int hour, int min){
+        (new TimePickerDialog(InputActivity.this, timeSetListenerS, hour,min,true)).show();
     }
 
     private TimePickerDialog.OnTimeSetListener timeSetListenerW = new TimePickerDialog.OnTimeSetListener() {
@@ -214,9 +217,23 @@ public class InputActivity extends AppCompatActivity
         {
             int hourW = hourOfDay;
             int minW = minute;
-            TextView spaceWake = (TextView) findViewById(R.id.wake_time);
-            spaceWake.setText(new StringBuilder().append(hourW).append(" : ").append(minW));
+            TextView wakeH = (TextView) findViewById(R.id.wake_hour);
+            TextView wakeM = (TextView) findViewById(R.id.wake_min);
+            wakeH.setText(Integer.toString(hourW));
+            wakeM.setText(Integer.toString(minW));
+        }
+    };
 
+    private TimePickerDialog.OnTimeSetListener timeSetListenerS = new TimePickerDialog.OnTimeSetListener() {
+        @Override
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute)
+        {
+            int hourW = hourOfDay;
+            int minW = minute;
+            TextView sleepH = (TextView) findViewById(R.id.sleep_hour);
+            TextView sleepM = (TextView) findViewById(R.id.sleep_min);
+            sleepH.setText(Integer.toString(hourW));
+            sleepM.setText(Integer.toString(minW));
         }
     };
 
@@ -225,7 +242,6 @@ public class InputActivity extends AppCompatActivity
     protected void onPause()
     {
         super.onPause();
-
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
@@ -244,15 +260,13 @@ public class InputActivity extends AppCompatActivity
         boolean lessnot = checkNoti.isChecked();
         CheckBox checkSport = (CheckBox)findViewById(R.id.sport_box) ;
         boolean sport = checkSport.isChecked();
-        TextView spaceWake=(TextView) findViewById(R.id.wake_time);
-        TextView spaceSleep=(TextView) findViewById(R.id.sleep_time);
-
-        /*
         int hourW = 0+Integer.parseInt(((TextView)findViewById(R.id.wake_hour)).getText().toString());
         int minW = 0+Integer.parseInt(((TextView)findViewById(R.id.wake_min)).getText().toString());
         int hourS = 0+Integer.parseInt(((TextView)findViewById(R.id.sleep_hour)).getText().toString());
         int minS = 0+Integer.parseInt(((TextView)findViewById(R.id.sleep_min)).getText().toString());
-        */
+
+        fillNotArray(getQuantity(), lessnot, hourW, minW,hourS, minS);
+
 
         //salvataggio dello stato persistente
         editor.putInt("age_value",age);
@@ -261,14 +275,10 @@ public class InputActivity extends AppCompatActivity
         editor.putBoolean("male_value",male);
         editor.putString("name_value",name);
         editor.putBoolean("sport_value",sport);
-
         editor.putInt("hour_w",hourW);
         editor.putInt("min_w",minW);
         editor.putInt("hour_s",hourS);
         editor.putInt("min_s",minS);
-
-        editor.putString("time_wake", spaceWake.getText().toString());
-        editor.putString("time_sleep", spaceSleep.getText().toString());
 
         if(modificationsHaveOccurred){
             editor.putInt("quantity",getQuantity());
@@ -316,7 +326,7 @@ public class InputActivity extends AppCompatActivity
         int weight = preferences.getInt("weight_value",50);
         boolean male = preferences.getBoolean("male_value",false);  //male = true, female = false;
         boolean sport = preferences.getBoolean("sport_value",false);
-        int quantity=0; //quantità determinata in cl
+        int quantity=0; //quantità determinata in ml
         if(age<=2) quantity=500;
         else if(age<5) quantity=900;
         else if(age<10) quantity=1100;
@@ -346,23 +356,105 @@ public class InputActivity extends AppCompatActivity
         return quantity;
     }
 
+    private void fillNotArray(int quantity, boolean lessnot, int wakeH, int wakeM, int sleepH, int sleepM){
+        int hour = sleepH- wakeH;
+        boolean b = false;
+        double mlph = quantity/hour;
 
-    /*
-    //questo metodo viene invocato quando l'activity viene messa in pausa se i valori di input subiscono delle modifiche
-    //gli orari delle notifiche vengono schedulati utilizzando il nuovo input
-    private void scheduleNotifications()
-    {
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        int bicchieri = (Integer) (preferences.getInt("quantity", 0))/200;
-        MyTime wake, sleep;
-        int hours[] = new int[24];
-        int slot = sleep.getHour()-wake.getHour()+1;
-        int free = slot-bicchieri; //se>0 ho più slot che bicchieri
-        int extra = -free;
-        if(extra>0){
+        if(lessnot)
+        {
+            Calendar c0 = Calendar.getInstance();
+            c0.set(Calendar.HOUR_OF_DAY, wakeH+2);
+            c0.set(Calendar.MINUTE, 30);
 
+            Calendar c1 = Calendar.getInstance();
+            c1.set(Calendar.HOUR_OF_DAY, wakeH+6);
+            c1.set(Calendar.MINUTE, 30);
+
+            Calendar c2 = Calendar.getInstance();
+            c2.set(Calendar.HOUR_OF_DAY, wakeH+11);
+            c2.set(Calendar.MINUTE, 30);
+
+
+            int glasses = (quantity-(quantity%150))/150+1;
+            int q;
+            switch (glasses){
+                case 1:  q = (glasses+1)/3;
+                    break;
+                case 2:  q = (glasses+2)/3;
+                    break;
+                default: q=(glasses)/3;
+                    break;
+            }
+
+
+            notArray[wakeH+2]= new NotificationTemplate(0, c0, q);
+            notArray[wakeH+6]= new NotificationTemplate(1, c1, q);
+            notArray[wakeH+11]= new NotificationTemplate(2, c2, q);
+        }
+        else{
+            for(int i=wakeH; i<sleepH+1; i++){
+
+                Calendar c = Calendar.getInstance();
+                c.set(Calendar.HOUR_OF_DAY,i);
+                c.set(Calendar.MINUTE, 30);
+                if(i==wakeH){
+                    if (wakeM>50)
+                    {
+                        c.set(Calendar.HOUR_OF_DAY,i+1);
+                        c.set(Calendar.MINUTE, wakeM-50);
+                    }
+                    else
+                        c.set(Calendar.MINUTE, wakeM+10);
+                }
+                if(i==sleepH){
+                    if(sleepM<10)
+                    {
+                        c.set(Calendar.HOUR_OF_DAY,i-1);
+                        c.set(Calendar.MINUTE, wakeM+50);
+                    }
+                    else{
+                        c.set(Calendar.MINUTE, sleepM-10);
+                    }
+                }
+
+                int q;
+                if(!b)
+                {
+                    Double d = (mlph - (mlph%150))/150 +1;
+                    q =Integer.valueOf(d.intValue());
+                    b=true;
+                }
+                else{
+                    Double d = (mlph - (mlph%150))/150 +1;
+                    q =Integer.valueOf(d.intValue());
+                }
+                notArray[i]= new NotificationTemplate(i, c, q);
+            }
+        }
+
+    }
+
+    //inizializzo l'array con vecchio input
+    private void initializeNotArray(){
+
+    }
+
+    //sovrascrivo file col nuovo input
+    private void storeNotArray(){
+        try{
+            FileOutputStream fos = new FileOutputStream("t.tmp");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            for(int i=0; i<24; i++)
+                oos.writeObject(notArray[i]);
+            oos.close();
+            fos.close();
+        }
+        catch(FileNotFoundException e){
+            Log.d(TAG, getResources().getString(R.string.file_not_found));
+        }
+        catch (IOException e){
+            Log.d(TAG, getResources().getString(R.string.io_exception));
         }
     }
-    */
-
 }

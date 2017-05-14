@@ -18,4 +18,6 @@
     <string name="toast_hour">Insert a real hour</string>
     <string name="toast_name">Wow! Your name is really long!</string>
     <string name="toast_neg">You cannot drink less than zero glasses of water!</string>
+    <string name="file_not_found">FileNotFoundException caught!</string>
+    <string name="io_exception">IOException caught!</string>
 </resources>
