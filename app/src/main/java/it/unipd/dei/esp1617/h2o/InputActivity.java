@@ -3,7 +3,7 @@ package it.unipd.dei.esp1617.h2o;
 //import android.annotation.SuppressLint;
 import android.app.TimePickerDialog;
 import android.content.SharedPreferences;
-import android.icu.util.Calendar;
+import java.util.Calendar;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -28,6 +28,9 @@ public class InputActivity extends AppCompatActivity
     private boolean toastNameSent,toastWeightSent;
     private boolean modificationsHaveOccurred = false;
 
+    private int hourS = -1, minS = -1, hourW = -1, minW = -1;
+    static final int TIME_DIALOG_ID = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,10 +46,14 @@ public class InputActivity extends AppCompatActivity
         boolean male = preferences.getBoolean("male_value",false);  //male = true, female = false;
         String name = preferences.getString("name_value", "Al Bano Carrisi");
         int quantity = preferences.getInt("quantity", 0);
-        final int hourW = preferences.getInt("hour_w", 7);
-        final int minW = preferences.getInt("min_w", 0);
-        final int hourS = preferences.getInt("hour_s", 23);
-        final int minS = preferences.getInt("min_s", 0);
+        hourW = preferences.getInt("hour_w", 7);
+        minW = preferences.getInt("min_w", 0);
+        hourS = preferences.getInt("hour_s", 23);
+        minS = preferences.getInt("min_s", 0);
+
+        String wake = preferences.getString("time_wake", hourW+" : "+minW);
+        String sleep = preferences.getString("time_sleep", hourS+" : "+minS);
+
 
 
         //aggancio widget con IDs
@@ -55,10 +62,8 @@ public class InputActivity extends AppCompatActivity
         //EditText spaceSport=(EditText) findViewById(R.id.sport_time);
         Spinner spinnerSex=(Spinner) findViewById(R.id.sex_spinner);
         final Spinner spinnerAge=(Spinner) findViewById(R.id.age_spinner);
-        TextView wakeHour=(TextView) findViewById(R.id.wake_hour);
-        TextView wakeMin=(TextView) findViewById(R.id.wake_min);
-        TextView sleepHour=(TextView) findViewById(R.id.sleep_hour);
-        TextView sleepMin=(TextView) findViewById(R.id.sleep_min);
+        TextView spaceSleep=(TextView) findViewById(R.id.sleep_time);
+        TextView spaceWake=(TextView) findViewById(R.id.wake_time);
         CheckBox checkNot = (CheckBox) findViewById(R.id.less_notifications);
         CheckBox checkSport= (CheckBox) findViewById(R.id.sport_box);
         //CheckBox
@@ -155,48 +160,52 @@ public class InputActivity extends AppCompatActivity
             }
         });
 
+        spaceSleep.setText(sleep);
+        spaceWake.setText(wake);
 
-        wakeHour.setText(Integer.toString(hourW));
-        wakeMin.setText(Integer.toString(minW));
-        sleepHour.setText(Integer.toString(hourS));
-        sleepMin.setText(Integer.toString(minS));
-
-        wakeHour.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                showTimeDialogW(v, hourW, minW);
+        spaceSleep.setOnClickListener(new EditText.OnClickListener() {
+            public void onClick(View v) {
+                if (hourS == -1 || minS == -1) {
+                    Calendar c = Calendar.getInstance();
+                    hourS = c.get(Calendar.HOUR);
+                    minS = c.get(Calendar.MINUTE);
+                }
+                showTimeDialogS(hourS, minS);
             }
         });
 
-        wakeMin.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                showTimeDialogW(v, hourW, minW);
-            }
-        });
+        spaceWake.setOnClickListener(new EditText.OnClickListener() {
+            public void onClick(View v) {
+                if (hourW == -1 || minW == -1) {
+                    Calendar c = Calendar.getInstance();
+                    hourW = c.get(Calendar.HOUR);
+                    minW = c.get(Calendar.MINUTE);
+                }
 
-        sleepHour.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                showTimeDialogS(v, hourS, minS);
-            }
-        });
-
-        sleepMin.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                showTimeDialogS(v, hourS, minS);
+                showTimeDialogW(hourW, minW);
             }
         });
 
     }
 
-    private void showTimeDialogW(View v, int hour, int min){
+    public void showTimeDialogS(int hour, int min) {
+        (new TimePickerDialog(InputActivity.this, timeSetListenerS, hour, min, true)).show();
+    }
+
+    private TimePickerDialog.OnTimeSetListener timeSetListenerS = new TimePickerDialog.OnTimeSetListener() {
+        @Override
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute)
+        {
+            int hourS = hourOfDay;
+            int minS = minute;
+            TextView spaceSleep = (TextView) findViewById(R.id.sleep_time);
+            spaceSleep.setText(new StringBuilder().append(hourS).append(" : ").append(minS));
+
+        }
+    };
+
+    private void showTimeDialogW(int hour, int min){
         (new TimePickerDialog(InputActivity.this, timeSetListenerW, hour,min,true)).show();
-    }
-
-    private void showTimeDialogS(View v, int hour, int min){
-        (new TimePickerDialog(InputActivity.this, timeSetListenerS, hour,min,true)).show();
     }
 
     private TimePickerDialog.OnTimeSetListener timeSetListenerW = new TimePickerDialog.OnTimeSetListener() {
@@ -205,23 +214,9 @@ public class InputActivity extends AppCompatActivity
         {
             int hourW = hourOfDay;
             int minW = minute;
-            TextView wakeH = (TextView) findViewById(R.id.wake_hour);
-            TextView wakeM = (TextView) findViewById(R.id.wake_min);
-            wakeH.setText(Integer.toString(hourW));
-            wakeM.setText(Integer.toString(minW));
-        }
-    };
+            TextView spaceWake = (TextView) findViewById(R.id.wake_time);
+            spaceWake.setText(new StringBuilder().append(hourW).append(" : ").append(minW));
 
-    private TimePickerDialog.OnTimeSetListener timeSetListenerS = new TimePickerDialog.OnTimeSetListener() {
-        @Override
-        public void onTimeSet(TimePicker view, int hourOfDay, int minute)
-        {
-            int hourW = hourOfDay;
-            int minW = minute;
-            TextView sleepH = (TextView) findViewById(R.id.sleep_hour);
-            TextView sleepM = (TextView) findViewById(R.id.sleep_min);
-            sleepH.setText(Integer.toString(hourW));
-            sleepM.setText(Integer.toString(minW));
         }
     };
 
@@ -249,11 +244,15 @@ public class InputActivity extends AppCompatActivity
         boolean lessnot = checkNoti.isChecked();
         CheckBox checkSport = (CheckBox)findViewById(R.id.sport_box) ;
         boolean sport = checkSport.isChecked();
+        TextView spaceWake=(TextView) findViewById(R.id.wake_time);
+        TextView spaceSleep=(TextView) findViewById(R.id.sleep_time);
+
+        /*
         int hourW = 0+Integer.parseInt(((TextView)findViewById(R.id.wake_hour)).getText().toString());
         int minW = 0+Integer.parseInt(((TextView)findViewById(R.id.wake_min)).getText().toString());
         int hourS = 0+Integer.parseInt(((TextView)findViewById(R.id.sleep_hour)).getText().toString());
         int minS = 0+Integer.parseInt(((TextView)findViewById(R.id.sleep_min)).getText().toString());
-
+        */
 
         //salvataggio dello stato persistente
         editor.putInt("age_value",age);
@@ -262,10 +261,14 @@ public class InputActivity extends AppCompatActivity
         editor.putBoolean("male_value",male);
         editor.putString("name_value",name);
         editor.putBoolean("sport_value",sport);
+
         editor.putInt("hour_w",hourW);
         editor.putInt("min_w",minW);
         editor.putInt("hour_s",hourS);
         editor.putInt("min_s",minS);
+
+        editor.putString("time_wake", spaceWake.getText().toString());
+        editor.putString("time_sleep", spaceSleep.getText().toString());
 
         if(modificationsHaveOccurred){
             editor.putInt("quantity",getQuantity());
