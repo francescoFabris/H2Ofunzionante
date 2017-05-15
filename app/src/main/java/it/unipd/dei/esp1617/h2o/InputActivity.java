@@ -2,6 +2,8 @@ package it.unipd.dei.esp1617.h2o;
 
 //import android.annotation.SuppressLint;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -265,6 +267,9 @@ public class InputActivity extends AppCompatActivity
 
         fillNotArray(getQuantity(), lessnot, hourW, minW,hourS, minS);
 
+        int quantity = getQuantity();
+        fillNotArray(quantity, lessnot, hourW, minW,hourS, minS);
+        //INTENT AL SERVICE
 
         //salvataggio dello stato persistente
         editor.putInt("age_value",age);
@@ -282,6 +287,11 @@ public class InputActivity extends AppCompatActivity
 
         if(modificationsHaveOccurred){
             editor.putInt("quantity",getQuantity());
+            storeNotArray();
+
+            Intent i = new Intent(getApplicationContext(),H2OService.class);
+            i.putExtra(H2OService.RESCHEDULE, true);
+            startService(i);
         }
 
         //salvataggio in mutua esclusione
@@ -443,12 +453,14 @@ public class InputActivity extends AppCompatActivity
     //sovrascrivo file col nuovo input
     private void storeNotArray(){
         try{
-            FileOutputStream fos = new FileOutputStream("t.tmp");
+            FileOutputStream fos = (InputActivity.this).openFileOutput("notificationsTemplateContainer.obj", Context.MODE_PRIVATE);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            for(int i=0; i<24; i++)
+            for(int i=0; i<24; i++){
                 oos.writeObject(notArray[i]);
+            }
             oos.close();
             fos.close();
+            Log.d(TAG, "Storage NotificationTemplate eseguito");
         }
         catch(FileNotFoundException e){
             Log.d(TAG, getResources().getString(R.string.file_not_found));

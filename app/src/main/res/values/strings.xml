@@ -20,4 +20,6 @@
     <string name="toast_neg">You cannot drink less than zero glasses of water!</string>
     <string name="file_not_found">FileNotFoundException caught!</string>
     <string name="io_exception">IOException caught!</string>
+    <string name="class_not_found">ClassNotFoundException caught!</string>
+    <string name="not_title">Bevi, coglione!</string>
 </resources>
