@@ -208,8 +208,8 @@ public class InputActivity extends AppCompatActivity
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute)
         {
-            int hourS = hourOfDay;
-            int minS = minute;
+            hourS = hourOfDay;
+            minS = minute;
             TextView spaceSleep = (TextView) findViewById(R.id.sleep_time);
             spaceSleep.setText(new StringBuilder().append(hourS).append(" : ").append(minS));
 
@@ -224,8 +224,8 @@ public class InputActivity extends AppCompatActivity
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute)
         {
-            int hourW = hourOfDay;
-            int minW = minute;
+            hourW = hourOfDay;
+            minW = minute;
             TextView spaceWake = (TextView) findViewById(R.id.wake_time);
             spaceWake.setText(new StringBuilder().append(hourW).append(" : ").append(minW));
 
@@ -246,7 +246,7 @@ public class InputActivity extends AppCompatActivity
         EditText spaceWeight=(EditText) findViewById(R.id.weight);
         Double w = Double.parseDouble(0+spaceWeight.getText().toString());
         int weight = w.intValue();
-        //weight = (weight==0)?50:weight;
+        weight = (weight==0)?50:weight;
         Spinner spinnerSex=(Spinner) findViewById(R.id.sex_spinner);
         boolean male = spinnerSex.getSelectedItemPosition()==1;
         EditText spaceName=(EditText) findViewById(R.id.name_space);
@@ -367,9 +367,13 @@ public class InputActivity extends AppCompatActivity
     }
 
     private void fillNotArray(int quantity, boolean lessnot, int wakeH, int wakeM, int sleepH, int sleepM){
-        int hour = sleepH- wakeH;
+        int hour = sleepH- wakeH;//se si va a letto dopo mezzanotte, hour diventa negativo. Risoluzione riga successiva
+        hour = (hour<0)?(24+hour):(hour);
+        Log.d(TAG, "hour="+hour);
         boolean b = false;
         double mlph = quantity/hour;
+        Log.d(TAG, "quantity="+quantity);
+        Log.d(TAG, "mlph="+mlph);
 
         if(lessnot)
         {
@@ -388,7 +392,7 @@ public class InputActivity extends AppCompatActivity
 
             int glasses = (quantity-(quantity%150))/150+1;
             int q;
-            switch (glasses){
+            switch (glasses%3){
                 case 1:  q = (glasses+1)/3;
                     break;
                 case 2:  q = (glasses+2)/3;
@@ -399,48 +403,134 @@ public class InputActivity extends AppCompatActivity
 
 
             notArray[wakeH+2]= new NotificationTemplate(0, c0, q);
+            Log.d(TAG,"notifica 0 "+ c0.getTime().getHours()+ ":"+c0.getTime().getMinutes()+" bicchieri ="+q);
             notArray[wakeH+6]= new NotificationTemplate(1, c1, q);
+            Log.d(TAG,"notifica 1 "+ c1.getTime().getHours()+ ":"+c1.getTime().getMinutes()+" bicchieri ="+q);
             notArray[wakeH+11]= new NotificationTemplate(2, c2, q);
+            Log.d(TAG,"notifica 2 "+ c2.getTime().getHours()+ ":"+c2.getTime().getMinutes()+" bicchieri ="+q);
         }
         else{
-            for(int i=wakeH; i<sleepH+1; i++){
+            if(wakeH<sleepH){
+                for(int i=wakeH; i<sleepH+1; i++){
 
-                Calendar c = Calendar.getInstance();
-                c.set(Calendar.HOUR_OF_DAY,i);
-                c.set(Calendar.MINUTE, 30);
-                if(i==wakeH){
-                    if (wakeM>50)
-                    {
-                        c.set(Calendar.HOUR_OF_DAY,i+1);
-                        c.set(Calendar.MINUTE, wakeM-50);
+                    Calendar c = Calendar.getInstance();
+                    c.set(Calendar.HOUR_OF_DAY,i);
+                    c.set(Calendar.MINUTE, 30);
+                    if(i==wakeH){
+                        if (wakeM>50)
+                        {
+                            c.set(Calendar.HOUR_OF_DAY,i+1);
+                            c.set(Calendar.MINUTE, wakeM-50);
+                        }
+                        else
+                            c.set(Calendar.MINUTE, wakeM+10);
                     }
-                    else
-                        c.set(Calendar.MINUTE, wakeM+10);
-                }
-                if(i==sleepH){
-                    if(sleepM<10)
+                    if(i==sleepH){
+                        if(sleepM<10)
+                        {
+                            c.set(Calendar.HOUR_OF_DAY,i-1);
+                            c.set(Calendar.MINUTE, wakeM+50);
+                        }
+                        else{
+                            c.set(Calendar.MINUTE, sleepM-10);
+                        }
+                    }
+
+                    int q;
+                    if(!b)
                     {
-                        c.set(Calendar.HOUR_OF_DAY,i-1);
-                        c.set(Calendar.MINUTE, wakeM+50);
+                        Double d = (mlph - (mlph%150))/150 +1;
+                        q =Integer.valueOf(d.intValue());
+                        b=true;
                     }
                     else{
-                        c.set(Calendar.MINUTE, sleepM-10);
+                        Double d = (mlph - (mlph%150))/150 +1;
+                        q =Integer.valueOf(d.intValue());
                     }
+                    notArray[i]= new NotificationTemplate(i, c, q);
+                    Log.d(TAG,"notifica "+i+" "+ c.getTime().getHours()+ ":"+c.getTime().getMinutes()+" bicchieri ="+q);
                 }
-
-                int q;
-                if(!b)
-                {
-                    Double d = (mlph - (mlph%150))/150 +1;
-                    q =Integer.valueOf(d.intValue());
-                    b=true;
-                }
-                else{
-                    Double d = (mlph - (mlph%150))/150 +1;
-                    q =Integer.valueOf(d.intValue());
-                }
-                notArray[i]= new NotificationTemplate(i, c, q);
             }
+            else{
+                for(int i=wakeH; i<24;i++){
+                    Calendar c = Calendar.getInstance();
+                    c.set(Calendar.HOUR_OF_DAY,i);
+                    c.set(Calendar.MINUTE, 30);
+                    if(i==wakeH){
+                        if (wakeM>50)
+                        {
+                            c.set(Calendar.HOUR_OF_DAY,i+1);
+                            c.set(Calendar.MINUTE, wakeM-50);
+                        }
+                        else
+                            c.set(Calendar.MINUTE, wakeM+10);
+                    }
+                    if(i==sleepH){
+                        if(sleepM<10)
+                        {
+                            c.set(Calendar.HOUR_OF_DAY,i-1);
+                            c.set(Calendar.MINUTE, wakeM+50);
+                        }
+                        else{
+                            c.set(Calendar.MINUTE, sleepM-10);
+                        }
+                    }
+
+                    int q;
+                    if(!b)
+                    {
+                        Double d = (mlph - (mlph%150))/150;
+                        q =Integer.valueOf(d.intValue());
+                        b=true;
+                    }
+                    else{
+                        Double d = (mlph - (mlph%150))/150 +1;
+                        q =Integer.valueOf(d.intValue());
+                        b=false;
+                    }
+                    notArray[i]= new NotificationTemplate(i, c, q);
+                    Log.d(TAG,"notifica "+i+" "+ c.getTime().getHours()+ ":"+c.getTime().getMinutes()+" bicchieri ="+q);
+                }
+                for(int i=0; i< sleepH; i++){
+                    Calendar c = Calendar.getInstance();
+                    c.set(Calendar.HOUR_OF_DAY,i);
+                    c.set(Calendar.MINUTE, 30);
+                    if(i==wakeH){
+                        if (wakeM>50)
+                        {
+                            c.set(Calendar.HOUR_OF_DAY,i+1);
+                            c.set(Calendar.MINUTE, wakeM-50);
+                        }
+                        else
+                            c.set(Calendar.MINUTE, wakeM+10);
+                    }
+                    if(i==sleepH){
+                        if(sleepM<10)
+                        {
+                            c.set(Calendar.HOUR_OF_DAY,i-1);
+                            c.set(Calendar.MINUTE, wakeM+50);
+                        }
+                        else{
+                            c.set(Calendar.MINUTE, sleepM-10);
+                        }
+                    }
+
+                    int q;
+                    if(!b)
+                    {
+                        Double d = (mlph - (mlph%150))/150 +1;
+                        q =Integer.valueOf(d.intValue());
+                        b=true;
+                    }
+                    else{
+                        Double d = (mlph - (mlph%150))/150 +1;
+                        q =Integer.valueOf(d.intValue());
+                    }
+                    notArray[i]= new NotificationTemplate(i, c, q);
+                    Log.d(TAG,"notifica "+i+" "+ c.getTime().getHours()+ ":"+c.getTime().getMinutes()+" bicchieri ="+q);
+                }
+            }
+
         }
 
     }

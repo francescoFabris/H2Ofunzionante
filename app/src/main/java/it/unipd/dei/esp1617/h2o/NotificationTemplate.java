@@ -12,21 +12,21 @@ class NotificationTemplate implements Serializable{ //Serializable perché gli o
     private Calendar when;
     private int numberOfGlasses;
 
-    public NotificationTemplate(int id, Calendar when, int numberOfGlasses){
+    NotificationTemplate(int id, Calendar when, int numberOfGlasses){
         this.id=id;
         this.when=when;
         this.numberOfGlasses=numberOfGlasses;
     }
 
-    public int getId() {
+    int getId() {
         return id;
     }
 
-    public Calendar getWhen() {
+    Calendar getWhen() {
         return when;
     }
 
-    public int getNumberOfGlasses() {
+    int getNumberOfGlasses() {
         return numberOfGlasses;
     }
 }

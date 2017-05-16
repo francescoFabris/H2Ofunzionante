@@ -40,13 +40,14 @@ public class H2OReceiver extends BroadcastReceiver {
             NotificationTemplate nt = notArray[id];
             Notification not = createNotification(context.getApplicationContext(), nt);
             notMan.notify(id, not);
+
             Log.d(TAG, "notificata notifica "+id);
         }
     }
     private Notification createNotification(Context context, NotificationTemplate nt){
         Log.d(TAG,"creata notifica "+nt.getId() );
         NotificationCompat.Builder builder = (NotificationCompat.Builder) new NotificationCompat.Builder(context)
-                .setContentTitle(context.getResources().getString(R.string.not_title))
+                .setContentTitle("notifica n"+nt.getId())
                 .setContentText(nt.getNumberOfGlasses()+" bicchiere")
                 .setAutoCancel(true)
                 .setSmallIcon(R.mipmap.ic_launcher)

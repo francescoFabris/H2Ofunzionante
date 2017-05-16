@@ -80,14 +80,18 @@ public class H2OService extends Service{
         Log.d(TAG, "scheduleNotifications called", new Exception());
         getNotArray();
         for(int i=0; i<24; i++){
-            if(notArray[i]!=null){
+            if(notArray[i]!=null&&notArray[i].getNumberOfGlasses()!=0){
                 Intent intent = new Intent(this, H2OReceiver.class);
                 intent.putExtra(ID, notArray[i].getId());
                 intent.putExtra(H2OReceiver.NOTIFICATION,true);
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(this, notArray[i].getId(),intent,FLAG_UPDATE_CURRENT); //attenzione!!!!!!
-                alMan.set(AlarmManager.RTC_WAKEUP, notArray[i].getWhen().getTime().getTime(), pendingIntent);
-                alMan.setRepeating(AlarmManager.RTC_WAKEUP, notArray[i].getWhen().getTime().getTime(),24*60*60*1000, pendingIntent);
-                Log.d(TAG,"alarm schedulato n"+i+" mancano "+ ((notArray[i].getWhen().getTime().getTime()-Calendar.getInstance().getTime().getTime())/1000)+ " secondi");
+                long when=notArray[i].getWhen().getTime().getTime();
+                if(when<Calendar.getInstance().getTime().getTime()){
+                    when+=24*60*60*1000;
+                }
+                alMan.set(AlarmManager.RTC_WAKEUP, when, pendingIntent);
+                alMan.setRepeating(AlarmManager.RTC_WAKEUP, when,24*60*60*1000, pendingIntent);
+                Log.d(TAG,"alarm schedulato n"+i+" mancano "+ ((when-Calendar.getInstance().getTime().getTime())/1000)+ " secondi");
             }
         }
     }
