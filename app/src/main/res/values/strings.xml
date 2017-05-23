@@ -22,4 +22,5 @@
     <string name="io_exception">IOException caught!</string>
     <string name="class_not_found">ClassNotFoundException caught!</string>
     <string name="not_title">Bevi, coglione!</string>
+    <string name="title_activity_replay">ReplayActivity</string>
 </resources>

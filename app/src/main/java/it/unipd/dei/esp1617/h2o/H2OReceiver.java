@@ -2,9 +2,11 @@ package it.unipd.dei.esp1617.h2o;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
@@ -14,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
+import static android.content.Context.MODE_PRIVATE;
 import static android.content.Context.NOTIFICATION_SERVICE;
 
 public class H2OReceiver extends BroadcastReceiver {
@@ -21,12 +24,12 @@ public class H2OReceiver extends BroadcastReceiver {
     private NotificationTemplate[] notArray = new NotificationTemplate[24];
     private static final String TAG = "H2OReceiver";
     public static final String NOTIFICATION = "Notification";
+    public static final String MIDNIGHT = "Midnight";
     private Context context;
-
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        NotificationManager notMan = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+
         this.context = context;
         if (("android.intent.action.DATE_CHANGED").equals(intent.getAction())||
                 ("android.intent.action.BOOT_COMPLETED").equals(intent.getAction())) {
@@ -38,22 +41,12 @@ public class H2OReceiver extends BroadcastReceiver {
             getNotArray();
             int id = intent.getIntExtra(H2OService.ID, 24);
             NotificationTemplate nt = notArray[id];
-            Notification not = createNotification(context.getApplicationContext(), nt);
-            notMan.notify(id, not);
+            NotificationHandler nHan = new NotificationHandler(context,nt);
+            nHan.displayReply();
+
 
             Log.d(TAG, "notificata notifica "+id);
         }
-    }
-    private Notification createNotification(Context context, NotificationTemplate nt){
-        Log.d(TAG,"creata notifica "+nt.getId() );
-        NotificationCompat.Builder builder = (NotificationCompat.Builder) new NotificationCompat.Builder(context)
-                .setContentTitle("notifica n"+nt.getId())
-                .setContentText(nt.getNumberOfGlasses()+" bicchiere")
-                .setAutoCancel(true)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher));
-
-        return builder.build();
     }
 
     private void getNotArray(){

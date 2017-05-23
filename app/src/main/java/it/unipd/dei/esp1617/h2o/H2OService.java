@@ -42,7 +42,7 @@ public class H2OService extends Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        if(intent.getBooleanExtra(RESCHEDULE, true)){
+        if(intent.getBooleanExtra(RESCHEDULE, false)){
             scheduleNotifications();
             Log.d(TAG,"notifiche schedulate");
         }
@@ -80,7 +80,7 @@ public class H2OService extends Service{
         Log.d(TAG, "scheduleNotifications called", new Exception());
         getNotArray();
         for(int i=0; i<24; i++){
-            if(notArray[i]!=null&&notArray[i].getNumberOfGlasses()!=0){
+            if(notArray[i]!=null&&notArray[i].getNumberOfGlasses()>0){
                 Intent intent = new Intent(this, H2OReceiver.class);
                 intent.putExtra(ID, notArray[i].getId());
                 intent.putExtra(H2OReceiver.NOTIFICATION,true);

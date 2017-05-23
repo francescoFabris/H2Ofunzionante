@@ -31,6 +31,8 @@ import java.util.Calendar;
 import java.lang.Number;
 import java.util.Date;
 
+import static java.lang.Integer.valueOf;
+
 /**
  * Created by boemd on 04/04/2017.
  */
@@ -52,7 +54,7 @@ public class InputActivity extends AppCompatActivity
 
         modificationsHaveOccurred=false;
         //dati persistenti salvati come SharedPeferences
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
         int age = preferences.getInt("age_value",0);
         int weight = preferences.getInt("weight_value",50);
         boolean lessnot = preferences.getBoolean("lessnot_value",false);
@@ -212,7 +214,6 @@ public class InputActivity extends AppCompatActivity
             minS = minute;
             TextView spaceSleep = (TextView) findViewById(R.id.sleep_time);
             spaceSleep.setText(new StringBuilder().append(hourS).append(" : ").append(minS));
-
         }
     };
 
@@ -228,7 +229,6 @@ public class InputActivity extends AppCompatActivity
             minW = minute;
             TextView spaceWake = (TextView) findViewById(R.id.wake_time);
             spaceWake.setText(new StringBuilder().append(hourW).append(" : ").append(minW));
-
         }
     };
 
@@ -257,7 +257,7 @@ public class InputActivity extends AppCompatActivity
         boolean sport = checkSport.isChecked();
         TextView spaceWake=(TextView) findViewById(R.id.wake_time);
         TextView spaceSleep=(TextView) findViewById(R.id.sleep_time);
-
+        Log.d(TAG,name+" uomo=" +male+" anni="+age+" peso="+weight+" sport="+sport);
         /*
         int hourW = 0+Integer.parseInt(((TextView)findViewById(R.id.wake_hour)).getText().toString());
         int minW = 0+Integer.parseInt(((TextView)findViewById(R.id.wake_min)).getText().toString());
@@ -265,10 +265,10 @@ public class InputActivity extends AppCompatActivity
         int minS = 0+Integer.parseInt(((TextView)findViewById(R.id.sleep_min)).getText().toString());
         */
 
-        fillNotArray(getQuantity(), lessnot, hourW, minW,hourS, minS);
+        fillNotArray(getQuantity(), lessnot, hourW, minW,hourS, minS, male,age);
 
         int quantity = getQuantity();
-        fillNotArray(quantity, lessnot, hourW, minW,hourS, minS);
+        fillNotArray(quantity, lessnot, hourW, minW,hourS, minS, male, age);
         //INTENT AL SERVICE
 
         //salvataggio dello stato persistente
@@ -296,10 +296,6 @@ public class InputActivity extends AppCompatActivity
 
         //salvataggio in mutua esclusione
         editor.commit();
-
-        if(modificationsHaveOccurred){
-            //scheduleNotifications();
-        }
     }
 
     @Override
@@ -347,18 +343,18 @@ public class InputActivity extends AppCompatActivity
                 if(age>16)
                     quantity+=300;
                 if(sport)
-                    quantity+=200;
+                    quantity+=400;
                 if(weight>80)
-                    quantity+=100;
+                    quantity+=200;
             }
             else{
                 quantity=1500;
                 if(age>16)
                     quantity+=300;
                 if(sport)
-                    quantity+=200;
+                    quantity+=400;
                 if(weight>70)
-                    quantity+=100;
+                    quantity+=200;
             }
         }
 
@@ -366,17 +362,16 @@ public class InputActivity extends AppCompatActivity
         return quantity;
     }
 
-    private void fillNotArray(int quantity, boolean lessnot, int wakeH, int wakeM, int sleepH, int sleepM){
+    private void fillNotArray(int quantity, boolean lessnot, int wakeH, int wakeM, int sleepH, int sleepM, boolean male,int age){
         int hour = sleepH- wakeH;//se si va a letto dopo mezzanotte, hour diventa negativo. Risoluzione riga successiva
         hour = (hour<0)?(24+hour):(hour);
         Log.d(TAG, "hour="+hour);
-        boolean b = false;
-        double mlph = quantity/hour;
+
         Log.d(TAG, "quantity="+quantity);
-        Log.d(TAG, "mlph="+mlph);
 
         if(lessnot)
         {
+            //fisso l'ora delle notifiche
             Calendar c0 = Calendar.getInstance();
             c0.set(Calendar.HOUR_OF_DAY, wakeH+2);
             c0.set(Calendar.MINUTE, 30);
@@ -389,7 +384,7 @@ public class InputActivity extends AppCompatActivity
             c2.set(Calendar.HOUR_OF_DAY, wakeH+11);
             c2.set(Calendar.MINUTE, 30);
 
-
+            //fisso la quantità di bicchieri per notifica
             int glasses = (quantity-(quantity%150))/150+1;
             int q;
             switch (glasses%3){
@@ -412,7 +407,7 @@ public class InputActivity extends AppCompatActivity
         else{
             if(wakeH<sleepH){
                 for(int i=wakeH; i<sleepH+1; i++){
-
+                    //fisso ora della notifica
                     Calendar c = Calendar.getInstance();
                     c.set(Calendar.HOUR_OF_DAY,i);
                     c.set(Calendar.MINUTE, 30);
@@ -435,17 +430,40 @@ public class InputActivity extends AppCompatActivity
                             c.set(Calendar.MINUTE, sleepM-10);
                         }
                     }
+                    //fisso quantità della notifica
+                    int q=0;
 
-                    int q;
-                    if(!b)
-                    {
-                        Double d = (mlph - (mlph%150))/150 +1;
-                        q =Integer.valueOf(d.intValue());
-                        b=true;
+                    if(age<5){
+                        if((i-wakeH)%3==0)
+                            q=1;
+                    }
+                    else if(age<12){
+                        if((i-wakeH)%2==0)
+                            q=1;
                     }
                     else{
-                        Double d = (mlph - (mlph%150))/150 +1;
-                        q =Integer.valueOf(d.intValue());
+                        if (male) {
+                            if(quantity<2100){
+                                q=1;
+                            }
+                            else{
+                                if((i-wakeH)%2==0)
+                                    q=2;
+                                else
+                                    q=1;
+                            }
+                        }
+                        else{
+                            if(quantity<1900){
+                                q=1;
+                            }
+                            else{
+                                if((i-wakeH)%3==0)
+                                    q=2;
+                                else
+                                    q=1;
+                            }
+                        }
                     }
                     notArray[i]= new NotificationTemplate(i, c, q);
                     Log.d(TAG,"notifica "+i+" "+ c.getTime().getHours()+ ":"+c.getTime().getMinutes()+" bicchieri ="+q);
@@ -476,22 +494,46 @@ public class InputActivity extends AppCompatActivity
                         }
                     }
 
-                    int q;
-                    if(!b)
-                    {
-                        Double d = (mlph - (mlph%150))/150;
-                        q =Integer.valueOf(d.intValue());
-                        b=true;
+                    //fisso quantità della notifica
+                    int q=0;
+
+                    if(age<5){
+                        if((i-wakeH)%3==0)
+                            q=1;
+                    }
+                    else if(age<12){
+                        if((i-wakeH)%2==0)
+                            q=1;
                     }
                     else{
-                        Double d = (mlph - (mlph%150))/150 +1;
-                        q =Integer.valueOf(d.intValue());
-                        b=false;
+                        if (male) {
+                            if(quantity<2100){
+                                q=1;
+                            }
+                            else{
+                                if((i-wakeH)%2==0)
+                                    q=2;
+                                else
+                                    q=1;
+                            }
+                        }
+                        else{
+                            if(quantity<1900){
+                                q=1;
+                            }
+                            else{
+                                if((i-wakeH)%3==0)
+                                    q=2;
+                                else
+                                    q=1;
+                            }
+                        }
                     }
+
                     notArray[i]= new NotificationTemplate(i, c, q);
                     Log.d(TAG,"notifica "+i+" "+ c.getTime().getHours()+ ":"+c.getTime().getMinutes()+" bicchieri ="+q);
                 }
-                for(int i=0; i< sleepH; i++){
+                for(int i=0; i< sleepH+1; i++){
                     Calendar c = Calendar.getInstance();
                     c.set(Calendar.HOUR_OF_DAY,i);
                     c.set(Calendar.MINUTE, 30);
@@ -515,16 +557,40 @@ public class InputActivity extends AppCompatActivity
                         }
                     }
 
-                    int q;
-                    if(!b)
-                    {
-                        Double d = (mlph - (mlph%150))/150 +1;
-                        q =Integer.valueOf(d.intValue());
-                        b=true;
+                    //fisso quantità della notifica
+                    int q=0;
+
+                    if(age<5){
+                        if((i-wakeH)%3==0)
+                            q=1;
+                    }
+                    else if(age<12){
+                        if((i-wakeH)%2==0)
+                            q=1;
                     }
                     else{
-                        Double d = (mlph - (mlph%150))/150 +1;
-                        q =Integer.valueOf(d.intValue());
+                        if (male) {
+                            if(quantity<2100){
+                                q=1;
+                            }
+                            else{
+                                if((i-wakeH)%2==0)
+                                    q=2;
+                                else
+                                    q=1;
+                            }
+                        }
+                        else{
+                            if(quantity<1900){
+                                q=1;
+                            }
+                            else{
+                                if((i-wakeH)%3==0)
+                                    q=2;
+                                else
+                                    q=1;
+                            }
+                        }
                     }
                     notArray[i]= new NotificationTemplate(i, c, q);
                     Log.d(TAG,"notifica "+i+" "+ c.getTime().getHours()+ ":"+c.getTime().getMinutes()+" bicchieri ="+q);
